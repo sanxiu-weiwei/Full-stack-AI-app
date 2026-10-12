@@ -106,7 +106,7 @@ async def upload_logo(file: UploadFile = File(...), current_user: dict = Depends
     safe_name = f"logo_user_{current_user['id']}_{int(time.time())}.{ext}"
     with open(os.path.join(LOGO_DIR, safe_name), "wb") as f:
         f.write(content)
-    logo_url = f"http://localhost:8000/static/logos/{safe_name}"
+    logo_url = f"/static/logos/{safe_name}"
     update_user_logo(current_user['id'], logo_url)
     return {"logo_url": logo_url}
 

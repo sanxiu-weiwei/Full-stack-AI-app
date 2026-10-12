@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ai_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./my_ai_project/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - ai_net
+
+  backend:
+    build: ./my_ai_project
+    container_name: ai_backend
+    restart: always
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - ./my_ai_project/uploads:/app/uploads
+      - ./my_ai_project/chroma_db:/app/chroma_db
+    networks:
+      - ai_net
+
+  frontend:
+    build: ./ai-chat-frontend
+    container_name: ai_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - ai_net
+
+volumes:
+  mysql_data:
+
+networks:
+  ai_net:
+    driver: bridge

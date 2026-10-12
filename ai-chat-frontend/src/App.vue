@@ -316,7 +316,7 @@ function openModelModal() {
 
 async function loadLLMConfigs() {
   try {
-    const res = await fetch('http://localhost:8000/llm/configs', { headers: getHeaders() })
+    const res = await fetch('/api/llm/configs', { headers: getHeaders() })
     if (res.ok) llmConfigs.value = await res.json()
   } catch (e) { console.error(e) }
 }
@@ -359,8 +359,8 @@ async function saveConfig() {
     return alert('新增配置时 API Key 不能为空')
   }
   const url = editingConfigId.value
-    ? `http://localhost:8000/llm/configs/${editingConfigId.value}`
-    : 'http://localhost:8000/llm/configs'
+    ? `/api/llm/configs/${editingConfigId.value}`
+    : '/api/llm/configs'
   const method = editingConfigId.value ? 'PUT' : 'POST'
   try {
     const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(configForm.value) })
@@ -374,7 +374,7 @@ async function saveConfig() {
 
 async function activateConfig(id) {
   try {
-    await fetch(`http://localhost:8000/llm/configs/${id}/activate`, { method: 'POST', headers: getHeaders() })
+    await fetch(`/api/llm/configs/${id}/activate`, { method: 'POST', headers: getHeaders() })
     await loadLLMConfigs()
   } catch (e) { console.error(e) }
 }
@@ -382,7 +382,7 @@ async function activateConfig(id) {
 async function deleteConfig(id) {
   if (!confirm('确定删除这个配置？')) return
   try {
-    await fetch(`http://localhost:8000/llm/configs/${id}`, { method: 'DELETE', headers: getHeaders() })
+    await fetch(`/api/llm/configs/${id}`, { method: 'DELETE', headers: getHeaders() })
     await loadLLMConfigs()
   } catch (e) { console.error(e) }
 }
@@ -412,7 +412,7 @@ const getDocIcon = (doc) => { const exts = ['png','jpg','jpeg','webp']; if (exts
 
 async function handleAuth() {
   authError.value = ''
-  const url = isRegister.value ? 'http://localhost:8000/register' : 'http://localhost:8000/login'
+  const url = isRegister.value ? '/api/register' : '/api/login'
   try {
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(authForm.value) })
     const data = await res.json()
@@ -452,7 +452,7 @@ async function handleLogoUpload(e) {
   }
   const fd = new FormData(); fd.append('file', file)
   try {
-    const res = await fetch('http://localhost:8000/user/logo', {
+    const res = await fetch('/api/user/logo', {
       method: 'POST', headers: { 'Authorization': `Bearer ${token.value}` }, body: fd
     })
     const data = await res.json()
@@ -475,7 +475,7 @@ async function switchSession(sessionId) {
   if (currentSessionId.value === sessionId || loading.value) return
   currentSessionId.value = sessionId; messages.value = []
   try {
-    const res = await fetch(`http://localhost:8000/history/${sessionId}`, { headers: getHeaders() })
+    const res = await fetch(`/api/history/${sessionId}`, { headers: getHeaders() })
     if (res.ok) {
       const history = await res.json()
       messages.value = history.map(m => ({ ...m, time: getNowTime(), toolCalls: [], images: [] }))
@@ -484,9 +484,9 @@ async function switchSession(sessionId) {
   } catch (e) {}
 }
 
-async function loadSessions() { try { const res = await fetch('http://localhost:8000/sessions', { headers: getHeaders() }); if (res.ok) sessions.value = await res.json() } catch (e) {} }
-async function loadDocuments() { try { const res = await fetch('http://localhost:8000/documents', { headers: getHeaders() }); if (res.ok) documents.value = await res.json() } catch (e) {} }
-async function loadCustomPlugins() { try { const res = await fetch('http://localhost:8000/plugins', { headers: getHeaders() }); if (res.ok) customPlugins.value = await res.json() } catch (e) {} }
+async function loadSessions() { try { const res = await fetch('/api/sessions', { headers: getHeaders() }); if (res.ok) sessions.value = await res.json() } catch (e) {} }
+async function loadDocuments() { try { const res = await fetch('/api/documents', { headers: getHeaders() }); if (res.ok) documents.value = await res.json() } catch (e) {} }
+async function loadCustomPlugins() { try { const res = await fetch('/api/plugins', { headers: getHeaders() }); if (res.ok) customPlugins.value = await res.json() } catch (e) {} }
 
 function startPolling() {
   if (pollTimer) return
@@ -499,19 +499,19 @@ async function handleFileUpload(e) {
   const file = e.target.files[0]; if (!file) return
   uploading.value = true; const fd = new FormData(); fd.append('file', file)
   try {
-    const res = await fetch('http://localhost:8000/upload', { method: 'POST', headers: { 'Authorization': `Bearer ${token.value}` }, body: fd })
+    const res = await fetch('/api/upload', { method: 'POST', headers: { 'Authorization': `Bearer ${token.value}` }, body: fd })
     const data = await res.json(); if (!res.ok) throw new Error(data.detail || '上传失败'); await loadDocuments()
   } catch (e) { alert('❌ ' + e.message) } finally { uploading.value = false; e.target.value = '' }
 }
 
 function handleDocClick(doc) { if (doc.status !== 'done') return; toggleDoc(doc.id) }
 function toggleDoc(id) { const i = selectedDocIds.value.indexOf(id); if (i >= 0) selectedDocIds.value.splice(i, 1); else selectedDocIds.value.push(id) }
-async function removeDoc(id) { if (!confirm('删除这个文档？')) return; try { await fetch(`http://localhost:8000/documents/${id}`, { method: 'DELETE', headers: getHeaders() }); selectedDocIds.value = selectedDocIds.value.filter(x => x !== id); await loadDocuments() } catch (e) {} }
+async function removeDoc(id) { if (!confirm('删除这个文档？')) return; try { await fetch(`/api/documents/${id}`, { method: 'DELETE', headers: getHeaders() }); selectedDocIds.value = selectedDocIds.value.filter(x => x !== id); await loadDocuments() } catch (e) {} }
 
 function startRename(s) { editingSessionId.value = s.session_id; editingTitle.value = s.preview || '' }
 function cancelRename() { editingSessionId.value = ''; editingTitle.value = '' }
-async function confirmRename(sessionId) { const t = editingTitle.value.trim(); if (!t) return cancelRename(); try { await fetch(`http://localhost:8000/sessions/${sessionId}/rename`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ new_title: t }) }); await loadSessions() } catch (e) {}; cancelRename() }
-async function confirmDelete(sessionId) { if (!confirm('确定删除会话？')) return; try { await fetch(`http://localhost:8000/sessions/${sessionId}`, { method: 'DELETE', headers: getHeaders() }); if (currentSessionId.value === sessionId) { currentSessionId.value = ''; messages.value = [] }; await loadSessions(); if (sessions.value.length > 0) switchSession(sessions.value[0].session_id); else createNewSession() } catch (e) {} }
+async function confirmRename(sessionId) { const t = editingTitle.value.trim(); if (!t) return cancelRename(); try { await fetch(`/api/sessions/${sessionId}/rename`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ new_title: t }) }); await loadSessions() } catch (e) {}; cancelRename() }
+async function confirmDelete(sessionId) { if (!confirm('确定删除会话？')) return; try { await fetch(`/api/sessions/${sessionId}`, { method: 'DELETE', headers: getHeaders() }); if (currentSessionId.value === sessionId) { currentSessionId.value = ''; messages.value = [] }; await loadSessions(); if (sessions.value.length > 0) switchSession(sessions.value[0].session_id); else createNewSession() } catch (e) {} }
 
 function openPluginModal() { showPluginModal.value = true }
 
@@ -520,7 +520,7 @@ async function saveCustomPlugin() {
   let params = {}
   try { params = JSON.parse(newPlugin.value.paramsText) } catch (e) { return alert('参数 JSON 格式错误') }
   try {
-    const res = await fetch('http://localhost:8000/plugins', {
+    const res = await fetch('/api/plugins', {
       method: 'POST', headers: getHeaders(),
       body: JSON.stringify({ name: newPlugin.value.name, description: newPlugin.value.description, method: newPlugin.value.method, url: newPlugin.value.url, params_schema: params })
     })
@@ -528,7 +528,7 @@ async function saveCustomPlugin() {
   } catch (e) { alert('添加失败') }
 }
 
-async function deleteCustomPlugin(id) { if (!confirm('删除这个插件？')) return; try { await fetch(`http://localhost:8000/plugins/${id}`, { method: 'DELETE', headers: getHeaders() }); await loadCustomPlugins() } catch (e) {} }
+async function deleteCustomPlugin(id) { if (!confirm('删除这个插件？')) return; try { await fetch(`/api/plugins/${id}`, { method: 'DELETE', headers: getHeaders() }); await loadCustomPlugins() } catch (e) {} }
 
 function quickSend(text) { input.value = text; send() }
 function autoResize() { const el = textareaRef.value; if (el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 150) + 'px' } }
@@ -567,7 +567,7 @@ async function send() {
   const enabledToolNames = enabledTools.value.concat(customPlugins.value.map(p => p.name))
 
   try {
-    const response = await fetch('http://localhost:8000/chat', {
+    const response = await fetch('/api/chat', {
       method: 'POST', headers: getHeaders(), signal: abortController.signal,
       body: JSON.stringify({ session_id: currentSessionId.value, message: userMsg, doc_ids: selectedDocIds.value, use_tools: enabledToolNames.length > 0, enabled_tools: enabledToolNames })
     })
