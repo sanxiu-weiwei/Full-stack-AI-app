@@ -63,9 +63,6 @@ npm run dev
 
 ## 📸 运行截图
 
-> 把截图放到项目根目录的 `screenshots/` 文件夹，然后取消下面的注释即可。
-
-
 ### 聊天界面
 ![chat](./screenshots/2.webp)
 
@@ -79,6 +76,15 @@ npm run dev
 ## 📝 数据库初始化
 
 在 MySQL 中执行 `my_ai_project/schema.sql`（或手动执行建表语句）。
+
+## 👨💻 作者
+
+**三迷修**
+
+- GitHub: [@sanxiu-weiwei](https://github.com/sanxiu-weiwei)
+- 项目地址: [Full-stack-AI-app](https://github.com/sanxiu-weiwei/Full-stack-AI-app)
+
+如果这个项目对你有帮助，欢迎点个 ⭐ Star！
 
 ## 📄 License
 
