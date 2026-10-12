@@ -1,0 +1,35 @@
+# ===== 敏感信息 =====
+.env
+.env.*
+!.env.example
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# ===== 数据/缓存 =====
+chroma_db/
+uploads/
+plugins/
+*.log
+*.db
+
+# ===== Node =====
+node_modules/
+dist/
+.vite/
+*.local
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# ===== 系统 =====
+Thumbs.db
